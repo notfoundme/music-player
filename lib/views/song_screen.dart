@@ -1,10 +1,48 @@
+import 'dart:async';
+
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:music_player/constants/extensions.dart';
 
-class SongPage extends StatelessWidget {
-  const SongPage({Key? key}) : super(key: key);
+class SongPage extends StatefulWidget {
+  final String url;
+  const SongPage({Key? key, required this.url}) : super(key: key);
+
+  @override
+  State<SongPage> createState() => _SongPageState();
+}
+
+class _SongPageState extends State<SongPage> {
+  bool isPlaying = true;
+  AudioPlayer audioPlayer = AudioPlayer();
+  Duration totalMusicDuration = Duration();
+  Duration currentDuration = Duration();
+  // to cancel the stream after its no longer in use.
+  late StreamSubscription s1;
+
+  @override
+  void initState() {
+    s1 = audioPlayer.positionStream.listen((event) {
+      currentDuration = event;
+      setState(() {});
+    });
+    super.initState();
+    audioPlayer.setUrl(widget.url).then(
+      (value) {
+        totalMusicDuration = value!;
+        setState(() {});
+      },
+    ).then((_) => audioPlayer.play());
+  }
+
+  @override
+  void dispose() {
+    s1.cancel();
+    audioPlayer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,16 +79,23 @@ class SongPage extends StatelessWidget {
   }
 
   Widget songProgressBar() {
-    return ProgressBar(
-      barHeight: 8,
-      baseBarColor: Colors.grey[600],
-      bufferedBarColor: Colors.grey,
-      progressBarColor: Colors.red,
-      thumbColor: Colors.red,
-      timeLabelTextStyle:
-          TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      progress: Duration(seconds: 200),
-      total: Duration(minutes: 5),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ProgressBar(
+        //to make the song interactive while seeked
+        onSeek: (d) {
+          audioPlayer.seek(d);
+        },
+        barHeight: 8,
+        baseBarColor: Colors.grey[600],
+        bufferedBarColor: Colors.grey,
+        progressBarColor: Colors.red,
+        thumbColor: Colors.red,
+        timeLabelTextStyle:
+            TextStyle(color: Colors.black, fontWeight: FontWeight.w800),
+        progress: currentDuration,
+        total: totalMusicDuration,
+      ),
     );
   }
 
@@ -63,7 +108,6 @@ class SongPage extends StatelessWidget {
         style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
       ),
-      actions: [const Icon(Icons.menu)],
     );
   }
 
@@ -102,22 +146,38 @@ class SongPage extends StatelessWidget {
   }
 
   Widget playBtnsRow() {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.all(16.0),
       child: Row(
         children: [
           Expanded(
-            child: Icon(
-              Icons.skip_previous,
-              size: 32,
+            child: GestureDetector(
+              onTap: () {
+                audioPlayer.seek(Duration(seconds: 5));
+              },
+              child: Icon(
+                Icons.skip_previous,
+                size: 32,
+              ),
             ),
           ),
-          CircleAvatar(
-            backgroundColor: Color.fromARGB(255, 15, 108, 108),
-            radius: 40,
-            child: Icon(
-              Icons.play_arrow,
-              color: Colors.white,
+          GestureDetector(
+            onTap: () {
+              if (!isPlaying) {
+                audioPlayer.play();
+              } else {
+                audioPlayer.pause();
+              }
+              isPlaying = !isPlaying;
+              setState(() {});
+            },
+            child: CircleAvatar(
+              backgroundColor: Color.fromARGB(255, 15, 108, 108),
+              radius: 40,
+              child: Icon(
+                isPlaying ? Icons.pause : Icons.play_arrow,
+                color: Colors.white,
+              ),
             ),
           ),
           Expanded(

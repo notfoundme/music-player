@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:music_player/constants/extensions.dart';
-import 'package:music_player/views/song_page.dart';
+import 'package:music_player/views/song_screen.dart';
 
 class SingleMusicCard extends StatelessWidget {
   const SingleMusicCard({
@@ -9,11 +9,13 @@ class SingleMusicCard extends StatelessWidget {
     required this.image,
     required this.title,
     required this.content,
+    required this.url,
   });
 
   final String image;
   final String title;
   final String content;
+  final String url;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +60,9 @@ class SingleMusicCard extends StatelessWidget {
 
             GestureDetector(
               onTap: () {
-                context.navigateto(const SongPage());
+                context.navigateto(SongPage(
+                  url: url,
+                ));
               },
               child: const Padding(
                 padding: EdgeInsets.all(8.0),

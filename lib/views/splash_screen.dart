@@ -16,12 +16,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // Navigate to the  next screen after the delay
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (context) => HomeScreen(
-                  title: 'MarceMello ',
-                  content: " lofi songs you will enjoy",
-                  image: 'assets/img.png',
-                )),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     });
   }
@@ -30,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Container(
+        child: SizedBox(
           width: 200.0,
           height: 4.0,
           child: Stack(
